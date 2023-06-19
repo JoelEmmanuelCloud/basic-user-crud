@@ -1,16 +1,15 @@
 require('dotenv').config();
-const express = require('express');
 require('express-async-errors');
-
+const express = require('express');
 const app = express();
+
+const authRoute = require('./routes/auth');
+const usersRoute = require('./routes/users');
 
 app.use(express.json());
 
-app.get('/', (req,res) => {
-    res.status(200).json({
-        message: 'Hello World'
-    });
-});
+app.use('/api/v1/auth', authRoute);
+app.use('/api/v1/users', usersRoute);
 
 const port = process.env.PORT || 5000;
 

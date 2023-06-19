@@ -1,6 +1,6 @@
 const getAllUsers = async (req, res) => {
     res.send('get all user')
-
+}
 const createUser = async (req, res) => {
     res.send('user created')
 
@@ -21,4 +21,4 @@ const deleteUser = async (req, res) => {
 
 }
 
-module.exports = { getAllUsers, createUser, updateUser, deleteUser, updateUser}
+module.exports = { getAllUsers, createUser, updateUser, deleteUser, getUser}
