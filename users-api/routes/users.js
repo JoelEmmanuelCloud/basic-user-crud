@@ -13,4 +13,3 @@ router.route('/').post(createUser).get(getAllUsers);
 router.route('/:id').get(getUser).delete(deleteUser).patch(updateUser)
 
 module.exports = router
-
