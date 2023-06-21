@@ -2,6 +2,7 @@ const User = require('../models/user')
 const asyncWrapper = require('../middleware/async')
 const { createCustomError } = require('../errors/custom-error')
 const { StatusCodes } = require('http-status-codes');
+const mongoose = require('mongoose');
 
 
 const getAllUsers = async (req, res) => {
@@ -17,7 +18,7 @@ if (!password || !confirmPassword) {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Please enter both passwords' });
 }
 
-if (password !== confirmPassword) {
+if (password.trim() !== confirmPassword.trim()) {
     return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Passwords do not match' });
 }
 
@@ -29,59 +30,62 @@ res.status(201).json({ user });
 });
 
 const getUser = async (req, res, next) => {
-const { id: userID } = req.params;
-const user = await User.findOne({ _id: userID });
+    const { id: userID } = req.params;
 
-if (!user) {
-    const error = createCustomError('user not found', 404);
-    console.log({
-        statusCode: error.statusCode,
-        message: error.message,
-        error: error.error,
-    });
+    if (!mongoose.Types.ObjectId.isValid(userID)) {
+        const error = createCustomError('Invalid user ID', StatusCodes.BAD_REQUEST);
+        return next(error);
+    }
+
+    const user = await User.findOne({ _id: userID });
+
+    if (!user) {
+    const error = createCustomError('User not found', StatusCodes.NOT_FOUND);
     return next(error);
-}
+    }
 
-res.status(200).json({ user });
+    res.status(StatusCodes.OK).json({ user });
 };
 
 const deleteUser = async (req, res, next) => {
-const { id: userID } = req.params;
-const user = await User.findOneAndDelete({ _id: userID });
+    const { id: userID } = req.params;
 
-if (!user) {
-    const error = createCustomError('user not found', 404);
-    console.log({
-        statusCode: error.statusCode,
-        message: error.message,
-        error: error.error,
-    });
+    if (!mongoose.Types.ObjectId.isValid(userID)) {
+        const error = createCustomError('Invalid user id', StatusCodes.BAD_REQUEST);
+    
+        return next(error);
+    }
+
+    const user = await User.findOneAndDelete({ _id: userID });
+
+    if (!user) {
+    const error = createCustomError('User not found', StatusCodes.NOT_FOUND);
     return next(error);
-}
+    }
 
-res.status(200).json({ user });
+    res.status(StatusCodes.OK).json({ user });
 };
 
 const updateUser = asyncWrapper(async (req, res, next) => {
-const { id: userID } = req.params;
+    const { id: userID } = req.params;
 
-const user = await User.findOneAndUpdate(
+    if (!mongoose.Types.ObjectId.isValid(userID)) {
+        const error = createCustomError('Invalid user ID', StatusCodes.BAD_REQUEST);
+        return next(error);
+    }
+
+    const user = await User.findOneAndUpdate(
     { _id: userID },
     req.body,
     { new: true, runValidators: true }
     );
 
     if (!user) {
-        const error = createCustomError('user not found', 404);
-        console.log({
-            statusCode: error.statusCode,
-            message: error.message,
-            error: error.error,
-        });
-        return next(error);
+    const error = createCustomError('User not found', StatusCodes.NOT_FOUND);
+    return next(error);
     }
-res.status(200).json({ user });
-});
 
+    res.status(StatusCodes.OK).json({ user });
+});
 
 module.exports = { getAllUsers, createUser, updateUser, deleteUser, getUser };
