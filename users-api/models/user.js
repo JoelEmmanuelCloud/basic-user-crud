@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     minlength: [6, 'Password must have at least 6 characters.'],
     maxlength: [100, 'Password cannot exceed 100 characters.']
   },
-  passwordConfirm: {
+  confirmPassword: {
     type: String,
     required: [true, 'Please confirm the password.']
   },
@@ -68,10 +68,10 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-userSchema.pre('save', async function() {
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
+// userSchema.pre('save', async function() {
+//   const salt = await bcrypt.genSalt(10);
+//   this.password = await bcrypt.hash(this.password, salt);
+// });
 
 const User = mongoose.model('User', userSchema);
 
