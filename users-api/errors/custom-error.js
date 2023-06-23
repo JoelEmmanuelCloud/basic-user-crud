@@ -3,6 +3,12 @@ class CustomAPIError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.error = statusCode >= 400 && statusCode < 500 ? 'Not Found Error' : 'Server Error';
+
+    this.json = {
+        statusCode: this.statusCode,
+        message: this.message,
+        error: this.error
+    };
     }
 }
 
