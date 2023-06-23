@@ -5,31 +5,29 @@ const { StatusCodes } = require('http-status-codes');
 const mongoose = require('mongoose');
 
 
-const getAllUsers = async (req, res) => {
-const users = await User.find({});
-res.status(200).json({ users });
-};
+const getAllUsers = asyncWrapper(async (req, res) => {
+const page = Number(req.query.page) || 1;
+const limit = Number(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
 
-const createUser = asyncWrapper(async (req, res) => {
-const { password, confirmPassword } = req.body;
+const users = await User.find({})
+    .sort({ name: 1 })
+    .skip(offset)
+    .limit(limit);
 
-
-if (!password || !confirmPassword) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Please enter both passwords' });
-}
-
-if (password.trim() !== confirmPassword.trim()) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Passwords do not match' });
-}
-
-
-const user = await User.create(req.body);
-
-
-res.status(201).json({ user });
+res.status(200).json({ users, nbHits: users.length });
 });
 
-const getUser = async (req, res, next) => {
+
+const createUser = asyncWrapper(async (req, res) => {
+    
+    const user = await User.create(req.body)
+    
+    res.status(StatusCodes.CREATED).json({ user });
+});
+
+
+const getUser = asyncWrapper(async (req, res, next) => {
     const { id: userID } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userID)) {
@@ -45,9 +43,11 @@ const getUser = async (req, res, next) => {
     }
 
     res.status(StatusCodes.OK).json({ user });
-};
+});
 
-const deleteUser = async (req, res, next) => {
+
+
+const deleteUser = asyncWrapper(async (req, res, next) => {
     const { id: userID } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userID)) {
@@ -64,7 +64,9 @@ const deleteUser = async (req, res, next) => {
     }
 
     res.status(StatusCodes.OK).json({ user });
-};
+});
+
+
 
 const updateUser = asyncWrapper(async (req, res, next) => {
     const { id: userID } = req.params;
